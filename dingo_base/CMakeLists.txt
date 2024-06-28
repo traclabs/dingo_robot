@@ -27,7 +27,7 @@ add_dependencies(dingo_node ${catkin_EXPORTED_TARGETS})
 install(DIRECTORY launch config
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
-install(PROGRAMS scripts/compute_calibration
+install(PROGRAMS scripts/compute_calibration scripts/imu_tf_prefix_prepender
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 install(TARGETS dingo_node

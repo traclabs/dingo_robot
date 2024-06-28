@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+import rospy
+from sensor_msgs.msg import Imu
+
+"""
+This node simply subscribes to an IMU topic (ie. 'imu/data_raw'), prepends a tf prefix (ie. 'tf-prefix' parameter) to the
+frame_id in the header, and publishes the new message on a different IMU topic (ie. 'imu/data_raw_prefix')
+"""
+class ImuTfPrefixPrepender:
+
+    def callback(self, data):
+        data.header.frame_id = self.tf_prefix + data.header.frame_id
+        self.pub.publish(data)
+
+    def __init__(self):
+        self.tf_prefix = rospy.get_param("~tf_prefix", "")
+        print("self.tf_prefix: ", self.tf_prefix)
+        self.sub = rospy.Subscriber("imu/data_raw", Imu, self.callback)
+        self.pub = rospy.Publisher("imu/data_raw_prefixed", Imu, queue_size=10)
+
+if __name__ == '__main__':
+    rospy.init_node("imu_tf_prefix_prepender")
+    tf_prefix_appender = ImuTfPrefixPrepender()
+    rospy.spin()

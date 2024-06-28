@@ -63,10 +63,10 @@ DingoDiagnosticUpdater::DingoDiagnosticUpdater()
 
   // These message frequencies are reported on separately.
   ros::param::param("~expected_imu_frequency", expected_imu_frequency_, 50.0);
-  imu_diagnostic_ = new diagnostic_updater::TopicDiagnostic("/imu/data_raw", *this,
+  imu_diagnostic_ = new diagnostic_updater::TopicDiagnostic("imu/data_raw", *this,
       diagnostic_updater::FrequencyStatusParam(&expected_imu_frequency_, &expected_imu_frequency_, 0.15),
       diagnostic_updater::TimeStampStatusParam(-1, 1.0));
-  imu_sub_ = nh_.subscribe("/imu/data_raw", 5, &DingoDiagnosticUpdater::imuCallback, this);
+  imu_sub_ = nh_.subscribe("imu/data_raw", 5, &DingoDiagnosticUpdater::imuCallback, this);
 
   // Publish whether the wireless interface has an IP address every second.
   ros::param::param<std::string>("~wireless_interface", wireless_interface_, "wlan0");

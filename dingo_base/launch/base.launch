@@ -1,17 +1,26 @@
 <launch>
   <arg name="motor_params" default="$(optenv DINGO_MOTOR_PARAMS base)" />
+  <arg name="robot_name" default="" />
 
-  <include file="$(find dingo_description)/launch/description.launch" />
+  <include file="$(find dingo_description)/launch/description.launch">
+    <arg name="robot_name" value="$(arg robot_name)"/>
+  </include>
 
   <node pkg="rosserial_python" type="message_info_service.py" name="rosserial_message_info" />
 
   <node pkg="dingo_base" type="dingo_node" name="dingo_node" output="screen">
+    <!-- <remap from="/imu/data_raw" to="$(arg robot_name)/imu/data_raw"/>  For some reason, dingo_node subscribes to imu/data_raw -->
     <param name="dingo_omni" type="bool" value="$(optenv DINGO_OMNI 0)" />
     <rosparam command="load" file="$(find dingo_base)/config/$(arg motor_params).yaml" />
     <param name="wireless_interface" value="$(optenv DINGO_WIRELESS_INTERFACE wlp2s0)" />
   </node>
 
+  <node pkg="dingo_base" type="imu_tf_prefix_prepender" name="imu_tf_prefix_prepender">
+    <param name="tf_prefix" value="$(arg robot_name)/"/>
+  </node>
+
   <node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter">
+    <remap from="imu/data_raw" to="imu/data_raw_prefixed"/>
     <rosparam file="$(eval optenv('DINGO_MAG_CONFIG', find('dingo_base')+'/config/mag_config_default.yaml'))" />
     <rosparam>
       gain: 0.1
@@ -22,10 +31,14 @@
   </node>
 
   <!-- Differential controller and basic localization -->
-  <include file="$(find dingo_control)/launch/control.launch" />
+  <include file="$(find dingo_control)/launch/control.launch">
+    <arg name="robot_name" value="$(arg robot_name)" />
+  </include>
 
   <!-- Teleoperation via joystick and rviz interactive markers -->
-  <include file="$(find dingo_control)/launch/teleop.launch" />
+  <include file="$(find dingo_control)/launch/teleop.launch">
+    <arg name="robot_name" value="$(arg robot_name)" />
+  </include>
 
   <!-- Diagnostic Aggregator for robot monitor usage -->
   <group if="$(optenv DINGO_OMNI 0)">
